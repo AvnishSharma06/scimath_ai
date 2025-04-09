@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciMath AI Tutor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --accent-color: #6366f1;
+            --light-bg: #f3f4f6;
+            --dark-bg: #1f2937;
+            --text-light: #f9fafb;
+            --text-dark: #1f2937;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+        
+        .dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 1rem;
+            height: 100vh;
+        }
+        
+        header {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        
+        .dark-mode .sidebar {
+            background-color: #374151;
+        }
+        
+        .side-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+        
+        .side-section:last-child {
+            border-bottom: none;
+        }
+        
+        .side-section h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .subject-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: inherit;
+        }
+        
+        .subject-btn:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .dark-mode .subject-btn:hover {
+            background-color: #4b5563;
+        }
+        
+        .note-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #f3f4f6;
+            cursor: pointer;
+        }
+        
+        .dark-mode .note-item {
+            background-color: #4b5563;
+        }
+        
+        .note-item:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .dark-mode .note-item:hover {
+            background-color: #6b7280;
+        }
+        
+        .note-delete {
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .history-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #f3f4f6;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+        
+        .dark-mode .history-item {
+            background-color: #4b5563;
+        }
+        
+        .history-item:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .dark-mode .history-item:hover {
+            background-color: #6b7280;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 100px);
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .dark-mode .chat-container {
+            background-color: #374151;
+        }
+        
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+        }
+        
+        .status-indicator {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background-color: #f3f4f6;
+            color: var(--text-dark);
+            border-bottom-left-radius: 0;
+        }
+        
+        .dark-mode .ai-message {
+            background-color: #4b5563;
+            color: var(--text-light);
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            background-color: white;
+        }
+        
+        .dark-mode .chat-input {
+            background-color: #374151;
+        }
+        
+        #user-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            outline: none;
+            font-size: 1rem;
+            background-color: white;
+            color: var(--text-dark);
+        }
+        
+        .dark-mode #user-input {
+            background-color: #4b5563;
+            color: var(--text-light);
+            border-color: #6b7280;
+        }
+        
+        #send-btn {
+            margin-left: 0.5rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 0.375rem;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .dark-mode .modal-content {
+            background-color: #374151;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: inherit;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+        }
+        
+        .dark-mode .form-input {
+            background-color: #4b5563;
+            color: var(--text-light);
+            border-color: #6b7280;
+        }
+        
+        .form-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        .form-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                grid-column: span 1;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .sidebar.active {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 80%;
+                height: 100vh;
+                z-index: 100;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+        
+        /* Math formatting */
+        .math {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+        }
+        
+        .formula {
+            background-color: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .dark-mode .formula {
+            background-color: #1e293b;
+        }
+        
+        /* Code formatting */
+        .code {
+            background-color: #f1f5f9;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .dark-mode .code {
+            background-color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                SciMath AI Tutor
+            </div>
+            <div class="controls">
+                <button id="theme-toggle" class="btn">
+                    <svg id="light-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg id="dark-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+                <button id="add-note" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Add Note
+                </button>
+                <button id="clear-chat" class="btn btn-accent">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Clear Chat
+                </button>
+                <button id="menu-toggle" class="btn hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                    Menu
+                </button>
+            </div>
+        </header>
+        
+        <aside class="sidebar">
+            <div class="side-section">
+                <h3>Subject Quick Access</h3>
+                <button class="subject-btn" data-subject="physics">Physics</button>
+                <button class="subject-btn" data-subject="chemistry">Chemistry</button>
+                <button class="subject-btn" data-subject="biology">Biology</button>
+                <button class="subject-btn" data-subject="mathematics">Mathematics</button>
+                <button class="subject-btn" data-subject="computer-science">Computer Science</button>
+            </div>
+            
+            <div class="side-section">
+                <h3>Your Notes</h3>
+                <div id="notes-list">
+                    <!-- Notes will be dynamically added here -->
+                </div>
+            </div>
+            
+            <div class="side-section">
+                <h3>Chat History</h3>
+                <div id="history-list">
+                    <!-- History items will be dynamically added here -->
+                </div>
+            </div>
+        </aside>
+        
+        <main class="chat-container">
+            <div class="chat-header">
+                <span>Science & Math AI Tutor</span>
+                <div class="status">
+                    <span class="status-indicator"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+            
+            <div class="messages" id="messages">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            
+            <form class="chat-input" id="chat-form">
+                <input type="text" id="user-input" placeholder="Ask me anything about science or math..." autocomplete="off">
+                <button type="submit" id="send-btn" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </main>
+    </div>
+    
+    <!-- Add Note Modal -->
+    <div class="modal" id="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Note</h3>
+                <button class="close-modal" id="close-note-modal">&times;</button>
+            </div>
+            <form id="note-form">
+                <div class="form-group">
+                    <label for="note-title" class="form-label">Title</label>
+                    <input type="text" id="note-title" class="form-input" placeholder="Enter note title" required>
+                </div>
+                <div class="form-group">
+                    <label for="note-content" class="form-label">Content</label>
+                    <textarea id="note-content" class="form-input" rows="5" placeholder="Enter note content" required></textarea>
+                </div>
+                <button type="submit" class="form-btn">Save Note</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // Global variables
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyA2D4LBa47Am8PT2ozqFYM_vj2XNlUi3FE";
+        let chatHistory = [];
+        let notes = [];
+        
+        // AI Tutor custom prompt
+        const SYSTEM_PROMPT = `You are an advanced Science and Mathematics AI tutor designed to provide accurate, helpful, and educational assistance to students. Your purpose is to explain complex concepts clearly, solve problems step-by-step, and foster curiosity and deep understanding. Follow these guidelines:
+
+1. Be clear, concise, and pedagogically sound in your explanations
+2. Show complete solution steps for mathematical problems
+3. Use analogies and visualizations when appropriate
+4. Correct misconceptions gently and constructively
+5. Provide additional context and connections between topics
+6. Ask guiding questions to help students discover answers themselves
+7. Format mathematical equations clearly
+8. Always prioritize scientific accuracy and educational value
+9. Maintain a supportive, encouraging tone
+10. If you don't know something, acknowledge it rather than providing incorrect information
+
+You specialize in Physics, Chemistry, Biology, Mathematics, and Computer Science at various educational levels.`;
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messages');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('light-icon');
+        const darkIcon = document.getElementById('dark-icon');
+        const themeText = document.getElementById('theme-text');
+        const addNoteBtn = document.getElementById('add-note');
+        const noteModal = document.getElementById('note-modal');
+        const closeNoteModal = document.getElementById('close-note-modal');
+        const noteForm = document.getElementById('note-form');
+        const notesList = document.getElementById('notes-list');
+        const clearChatBtn = document.getElementById('clear-chat');
+        const toast = document.getElementById('toast');
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const subjectBtns = document.querySelectorAll('.subject-btn');
+        const historyList = document.getElementById('history-list');
+        
+        // Initialize the app
+        function init() {
+            // Check for saved theme
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+                themeText.textContent = 'Light Mode';
+            }
+            
+            // Load chat history
+            const savedHistory = localStorage.getItem('chatHistory');
+            if (savedHistory) {
+                chatHistory = JSON.parse(savedHistory);
+                renderChatHistory();
+                
+                // Render the last conversation
+                const lastConversation = findLastConversation();
+                if (lastConversation && lastConversation.length > 0) {
+                    lastConversation.forEach(msg => {
+                        addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
+                    });
+                } else {
+                    // Add welcome message if no history
+                    addMessage('ai', "Hey! I'm your Science and Mathematics tutor. I'm here to help you understand complex concepts, solve problems, and explore the fascinating world of science and math. What would you like to learn about today?");
+                }
+            } else {
+                // Add welcome message if no history
+                addMessage('ai', "Hey! I'm your Science and Mathematics tutor. I'm here to help you understand complex concepts, solve problems, and explore the fascinating world of science and math. What would you like to learn about today?");
+            }
+            
+            // Load notes
+            const savedNotes = localStorage.getItem('notes');
+            if (savedNotes) {
+                notes = JSON.parse(savedNotes);
+                renderNotes();
+            }
+            
+            // Check if mobile
+            if (window.innerWidth <= 768) {
+                menuToggle.classList.remove('hidden');
+            }
+            
+            // Event listeners
+            window.addEventListener('resize', handleResize);
+            
+            // Event delegation for dynamically created elements
+            document.addEventListener('click', handleDocumentClick);
+        }
+        
+        // Event Listeners
+        chatForm.addEventListener('submit', handleChatSubmit);
+        themeToggle.addEventListener('click', toggleTheme);
+        addNoteBtn.addEventListener('click', openNoteModal);
+        closeNoteModal.addEventListener('click', closeModal);
+        noteForm.addEventListener('submit', handleNoteSubmit);
+        clearChatBtn.addEventListener('click', clearChat);
+        menuToggle.addEventListener('click', toggleSidebar);
+        
+        // Add event listeners to subject buttons
+        subjectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const subject = btn.dataset.subject;
+                handleSubjectClick(subject);
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+        
+        // Handle document clicks (event delegation)
+        function handleDocumentClick(e) {
+            // Handle note deletion
+            if (e.target.classList.contains('note-delete')) {
+                const noteId = e.target.closest('.note-item').dataset.id;
+                deleteNote(noteId);
+                e.stopPropagation(); // Prevent opening the note
+            }
+            
+            // Handle note item click
+            if (e.target.closest('.note-item') && !e.target.classList.contains('note-delete')) {
+                const noteId = e.target.closest('.note-item').dataset.id;
+                viewNote(noteId);
+            }
+            
+            // Handle history item click
+            if (e.target.closest('.history-item')) {
+                const historyId = e.target.closest('.history-item').dataset.id;
+                loadConversation(historyId);
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            }
+        }
+        
+        // Handle Chat Submit
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to UI
+            addMessage('user', message);
+            userInput.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.classList.add('message', 'ai-message');
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.textContent = 'Thinking...';
+            messagesContainer.appendChild(typingIndicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            try {
+                // Prepare context from chat history (last 10 messages)
+                const recentMessages = chatHistory.slice(-10).map(msg => {
+                    return {
+                        role: msg.role === 'user' ? 'user' : 'model',
+                        parts: [{ text: msg.content }]
+                    };
+                });
+                
+                // Add system prompt
+                const conversation = [
+                    {
+                        role: 'model',
+                        parts: [{ text: SYSTEM_PROMPT }]
+                    },
+                    ...recentMessages,
+                    {
+                        role: 'user',
+                        parts: [{ text: message }]
+                    }
+                ];
+                
+                // Prepare request
+                const requestBody = {
+                    contents: conversation,
+                    generationConfig: {
+                        temperature: 0.4,
+                        maxOutputTokens: 2048
+                    }
+                };
+                
+                // Call API
+                // In a real implementation, you would make an actual API call
+                // Here we simulate a response for demo purposes
+                const response = await simulateAIResponse(message);
+                
+                // Remove typing indicator
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+                
+                // Add AI response to UI
+                addMessage('ai', response);
+                
+                // Save to chat history
+                saveMessage('user', message);
+                saveMessage('assistant', response);
+                
+                // Update history sidebar
+                renderChatHistory();
+                
+            } catch (error) {
+                console.error("Error:", error);
+                
+                // Remove typing indicator
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+                
+                // Show error message
+                addMessage('ai', "I'm sorry, I encountered an error while processing your request. Please try again.");
+            }
+        }
+        
+        // Simulate AI Response (for demo purposes)
+        function simulateAIResponse(message) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const lowerMsg = message.toLowerCase();
+                    
+                    // Simple pattern matching for demo
+                    if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
+                        resolve("Hello! I'm your Science and Math tutor. What would you like to learn about today?");
+                    } 
+
+                    else if (lowerMsg.includes('pythagoras') || lowerMsg.includes('pythagorean')) {
+                        resolve("The Pythagorean theorem states that in a right triangle, the square of the length of the hypotenuse equals the sum of the squares of the other two sides. It's written as a² + b² = c², where c is the hypotenuse. This fundamental principle is essential in geometry, trigonometry, and many real-world applications like navigation and construction.");
+                    }
+                    else if (lowerMsg.includes('newton') || lowerMsg.includes('gravity')) {
+                        resolve("Newton's Law of Universal Gravitation states that every particle attracts every other particle with a force directly proportional to the product of their masses and inversely proportional to the square of the distance between them. The formula is F = G(m₁m₂/r²), where G is the gravitational constant. This revolutionary idea explained planetary motion and why objects fall to Earth!");
+                    }
+                    else if (lowerMsg.includes('atom') || lowerMsg.includes('atomic')) {
+                        resolve("An atom is the basic unit of matter, consisting of a nucleus (containing protons and neutrons) surrounded by electrons. The number of protons determines which element it is. Modern atomic theory has evolved from Dalton's model to Thomson's 'plum pudding' model, then Rutherford's planetary model, and finally to the quantum mechanical model we use today, which describes electrons as existing in probability clouds rather than defined orbits.");
+                    }
+                    else if (lowerMsg.includes('derivative') || lowerMsg.includes('calculus')) {
+                        resolve("A derivative in calculus measures the rate at which a function changes at a particular point. It's represented as f'(x) or df/dx. For example, if f(x) = x², then f'(x) = 2x. This tells us that at any point x, the rate of change of the function is 2x. Derivatives are fundamental in physics for describing motion, in economics for analyzing marginal changes, and in optimization problems across many fields.");
+                    }
+                    else if (lowerMsg.includes('cell') || lowerMsg.includes('biology')) {
+                        resolve("Cells are the fundamental units of life. Eukaryotic cells (like those in plants and animals) have membrane-bound organelles including a nucleus that contains DNA, while prokaryotic cells (like bacteria) lack these features. Cell functions are controlled by various organelles: mitochondria generate energy, ribosomes synthesize proteins, the endoplasmic reticulum processes proteins, and the Golgi apparatus packages and distributes them. This complex cellular machinery works together to maintain life processes!");
+                    }
+                    else if (lowerMsg.includes('periodic table') || lowerMsg.includes('elements')) {
+                        resolve("The periodic table organizes chemical elements by increasing atomic number and recurring chemical properties. Elements in the same column (group) have similar properties because they have the same number of valence electrons. The table is divided into metals (left), nonmetals (right), and metalloids (between them). This organization helps scientists predict element properties and chemical reactions, making it one of chemistry's most powerful tools.");
+                    }
+                    else if (lowerMsg.includes('algorithm') || lowerMsg.includes('coding')) {
+                        resolve("An algorithm is a step-by-step procedure for solving a problem or accomplishing a task. In computer science, algorithms form the foundation of all computing systems. They can be expressed as pseudocode, flowcharts, or programming languages. Efficiency is measured in terms of time complexity (how execution time scales with input size) and space complexity (memory usage). Common algorithms include sorting (like quicksort or merge sort), searching (like binary search), and graph algorithms (like Dijkstra's shortest path).");
+                    }
+                    else {
+                        resolve("That's an interesting question about " + message.split(' ').slice(0, 3).join(' ') + "... Let me explain. To provide you with an accurate and comprehensive response, I'd need to connect to an AI model. In this demo, I'm providing simulated responses to certain keywords. Feel free to ask about topics like 'pythagorean theorem', 'newton's laws', 'atoms', 'derivatives', 'cells', 'periodic table', or 'algorithms' to see examples of how I would respond!");
+                    }
+                }, 1500);
+            });
+        }
+        
+        // Add Message to UI
+        function addMessage(type, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', type === 'user' ? 'user-message' : 'ai-message');
+            
+            // Process content for special formatting (math, code)
+            let processedContent = content;
+            
+            // Simple markdown-like processing for demo
+            // Format math expressions between $$ symbols
+            processedContent = processedContent.replace(/\$\$(.*?)\$\$/g, '<div class="formula">$1</div>');
+            
+            // Format code between ``` symbols
+            processedContent = processedContent.replace(/```(.*?)```/g, '<div class="code">$1</div>');
+            
+            messageDiv.innerHTML = processedContent;
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Save Message to History
+        function saveMessage(role, content) {
+            // Add to current chat history
+            chatHistory.push({
+                role: role,
+                content: content,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+        
+        // Find the last conversation (messages until there's a gap of more than 1 hour)
+        function findLastConversation() {
+            if (chatHistory.length === 0) return [];
+            
+            const conversation = [];
+            let lastTimestamp = new Date();
+            
+            // Start from the end and go backward
+            for (let i = chatHistory.length - 1; i >= 0; i--) {
+                const msgTime = new Date(chatHistory[i].timestamp);
+                const hoursDiff = (lastTimestamp - msgTime) / (1000 * 60 * 60);
+                
+                if (hoursDiff > 1 && conversation.length > 0) {
+                    break;
+                }
+                
+                conversation.unshift(chatHistory[i]);
+                lastTimestamp = msgTime;
+            }
+            
+            return conversation;
+        }
+        
+        // Render Chat History in sidebar
+        function renderChatHistory() {
+            historyList.innerHTML = '';
+            
+            // Group messages by conversation
+            const conversations = [];
+            let currentConvo = [];
+            let lastTimestamp = null;
+            
+            chatHistory.forEach((msg, index) => {
+                const msgTime = new Date(msg.timestamp);
+                
+                if (lastTimestamp && ((msgTime - lastTimestamp) / (1000 * 60 * 60) > 1)) {
+                    // If more than 1 hour gap, start new conversation
+                    if (currentConvo.length > 0) {
+                        conversations.push(currentConvo);
+                        currentConvo = [msg];
+                    }
+                } else {
+                    currentConvo.push(msg);
+                }
+                
+                lastTimestamp = msgTime;
+                
+                // Push the last conversation
+                if (index === chatHistory.length - 1 && currentConvo.length > 0) {
+                    conversations.push(currentConvo);
+                }
+            });
+            
+            // Add conversation items to sidebar
+            conversations.forEach((convo, index) => {
+                if (convo.length === 0) return;
+                
+                // Find first user message as title, or use timestamp
+                let title = "Conversation";
+                for (const msg of convo) {
+                    if (msg.role === 'user') {
+                        title = msg.content.substring(0, 30);
+                        if (msg.content.length > 30) title += '...';
+                        break;
+                    }
+                }
+                
+                const date = new Date(convo[0].timestamp);
+                const dateStr = `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history-item');
+                historyItem.dataset.id = index;
+                historyItem.textContent = `${title} (${dateStr})`;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Load a specific conversation
+        function loadConversation(index) {
+            const conversations = [];
+            let currentConvo = [];
+            let lastTimestamp = null;
+            
+            chatHistory.forEach((msg, idx) => {
+                const msgTime = new Date(msg.timestamp);
+                
+                if (lastTimestamp && ((msgTime - lastTimestamp) / (1000 * 60 * 60) > 1)) {
+                    if (currentConvo.length > 0) {
+                        conversations.push(currentConvo);
+                        currentConvo = [msg];
+                    }
+                } else {
+                    currentConvo.push(msg);
+                }
+                
+                lastTimestamp = msgTime;
+                
+                if (idx === chatHistory.length - 1 && currentConvo.length > 0) {
+                    conversations.push(currentConvo);
+                }
+            });
+            
+            if (conversations[index]) {
+                // Clear current messages
+                messagesContainer.innerHTML = '';
+                
+                // Display selected conversation
+                conversations[index].forEach(msg => {
+                    addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
+                });
+                
+                showToast('Conversation loaded');
+            }
+        }
+        
+        // Toggle Dark/Light Theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        // Open Note Modal
+        function openNoteModal() {
+            noteModal.classList.add('active');
+        }
+        
+        // Close Modal
+        function closeModal() {
+            noteModal.classList.remove('active');
+            
+            // Clear form
+            document.getElementById('note-title').value = '';
+            document.getElementById('note-content').value = '';
+        }
+        
+        // Handle Note Submit
+        function handleNoteSubmit(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('note-title').value.trim();
+            const content = document.getElementById('note-content').value.trim();
+            
+            if (title && content) {
+                const note = {
+                    id: Date.now().toString(),
+                    title,
+                    content,
+                    timestamp: new Date().toISOString()
+                };
+                
+                notes.push(note);
+                localStorage.setItem('notes', JSON.stringify(notes));
+                
+                renderNotes();
+                closeModal();
+                showToast('Note saved successfully!');
+            }
+        }
+        
+        // Render Notes
+        function renderNotes() {
+            notesList.innerHTML = '';
+            
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.classList.add('note-item');
+                noteItem.dataset.id = note.id;
+                
+                noteItem.innerHTML = `
+                    <span>${note.title}</span>
+                    <button class="note-delete">&times;</button>
+                `;
+                
+                notesList.appendChild(noteItem);
+            });
+        }
+        
+        // Delete Note
+        function deleteNote(id) {
+            notes = notes.filter(note => note.id !== id);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            renderNotes();
+            showToast('Note deleted');
+        }
+        
+        // View Note
+        function viewNote(id) {
+            const note = notes.find(note => note.id === id);
+            if (note) {
+                // Add as AI message to chat
+                addMessage('ai', `<strong>Note: ${note.title}</strong><br><br>${note.content}`);
+                
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            }
+        }
+        
+        // Clear Chat
+        function clearChat() {
+            messagesContainer.innerHTML = '';
+            addMessage('ai', "I've cleared our conversation. What would you like to discuss now?");
+            
+            // Don't clear history, just add a marker for new conversation
+            saveMessage('system', '--conversation-break--');
+            
+            showToast('Chat cleared');
+        }
+        
+        // Show Toast Notification
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Toggle Sidebar (mobile)
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+        }
+        
+        // Handle Window Resize
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                menuToggle.classList.remove('hidden');
+            } else {
+                menuToggle.classList.add('hidden');
+                sidebar.classList.remove('active');
+            }
+        }
+        
+        // Handle Subject Quick Access
+        function handleSubjectClick(subject) {
+            let message = '';
+            
+            switch(subject) {
+                case 'physics':
+                    message = "Can you explain the fundamental forces of physics?";
+                    break;
+                case 'chemistry':
+                    message = "What are chemical bonds and how do they work?";
+                    break;
+                case 'biology':
+                    message = "Can you explain cell division and its importance?";
+                    break;
+                case 'mathematics':
+                    message = "What are the applications of calculus in real life?";
+                    break;
+                case 'computer-science':
+                    message = "Explain the concept of algorithms and their efficiency.";
+                    break;
+            }
+            
+            userInput.value = message;
+            userInput.focus();
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Add animation effects using GSAP-like custom animation library
+        document.addEventListener('DOMContentLoaded', () => {
+            // Logo pulse animation
+            const logo = document.querySelector('.logo svg');
+            setInterval(() => {
+                logo.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    logo.style.transform = 'scale(1)';
+                }, 500);
+            }, 2000);
+            
+            // Message entry animation
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.classList && node.classList.contains('message')) {
+                                // Start with opacity 0 and transform
+                                node.style.opacity = '0';
+                                node.style.transform = node.classList.contains('user-message') 
+                                    ? 'translateX(20px)' 
+                                    : 'translateX(-20px)';
+                                
+                                // Animate in
+                                setTimeout(() => {
+                                    node.style.transition = 'all 0.3s ease';
+                                    node.style.opacity = '1';
+                                    node.style.transform = 'translateX(0)';
+                                }, 10);
+                            }
+                        });
+                    }
+                });
+            });
+            
+            observer.observe(messagesContainer, { childList: true });
+            
+            // Button hover effects
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseover', () => {
+                    btn.style.transform = 'translateY(-2px)';
+                    btn.style.boxShadow = '0 6px 8px -1px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.06)';
+                });
+                
+                btn.addEventListener('mouseout', () => {
+                    btn.style.transform = 'translateY(0)';
+                    btn.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+</antArtifact>
+
