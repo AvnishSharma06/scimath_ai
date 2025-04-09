@@ -278,7 +278,7 @@
         
         .chat-input {
             display: flex;
-            padding: 1rem;
+            padding: 30px;
             border-top: 1px solid #e5e7eb;
             background-color: white;
         }
@@ -536,15 +536,7 @@
         </header>
         
         <aside class="sidebar">
-            <div class="side-section">
-                <h3>Subject Quick Access</h3>
-                <button class="subject-btn" data-subject="physics">Physics</button>
-                <button class="subject-btn" data-subject="chemistry">Chemistry</button>
-                <button class="subject-btn" data-subject="biology">Biology</button>
-                <button class="subject-btn" data-subject="mathematics">Mathematics</button>
-                <button class="subject-btn" data-subject="computer-science">Computer Science</button>
-            </div>
-            
+   
             <div class="side-section">
                 <h3>Your Notes</h3>
                 <div id="notes-list">
@@ -616,20 +608,71 @@
         let notes = [];
         
         // AI Tutor custom prompt
-        const SYSTEM_PROMPT = `You are an advanced Science and Mathematics AI tutor designed to provide accurate, helpful, and educational assistance to students. Your purpose is to explain complex concepts clearly, solve problems step-by-step, and foster curiosity and deep understanding. Follow these guidelines:
+        const SYSTEM_PROMPT = `You are an advanced Science and Mathematics AI tutor. Follow these guidelines:
 
-1. Be clear, concise, and pedagogically sound in your explanations
-2. Show complete solution steps for mathematical problems
-3. Use analogies and visualizations when appropriate
-4. Correct misconceptions gently and constructively
-5. Provide additional context and connections between topics
-6. Ask guiding questions to help students discover answers themselves
-7. Format mathematical equations clearly
-8. Always prioritize scientific accuracy and educational value
-9. Maintain a supportive, encouraging tone
-10. If you don't know something, acknowledge it rather than providing incorrect information
+1. For force-related questions:
+   - Give a 1-sentence definition.
+   - List 4 key effects using bullet points (just hyphens or <ul><li> if needed).
+   - Add 3 essential characteristics clearly.
+   - Keep answers under 50 words unless asked for more detail.
+   - Never use Markdown syntax like **bold**,
+   - Bullets using <ul><li>...</li></ul>
+   - Bold using <strong>...</strong>
+   - No markdown (* or ** or _)
 
-You specialize in Physics, Chemistry, Biology, Mathematics, and Computer Science at various educational levels.`;
+
+2. General rules:
+   - Be clear and concise
+   - Use bullet points for lists
+   - Format math as: F=ma
+   - Support with examples when requested`;
+
+// Example API call with prompt engineering
+async function getForceExplanation() {
+  const userQuestion = "What is force?";
+  
+  const conversation = [
+    {
+      role: 'model',
+      parts: [{ text: SYSTEM_PROMPT }]
+    },
+    {
+      role: 'user',
+      parts: [{ text: userQuestion }]
+    }
+  ];
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contents: conversation,
+      generationConfig: {
+        temperature: 0.3,  // Lower for more precise answers
+        maxOutputTokens: 100  // Limits response length
+      }
+    })
+  });
+
+  const data = await response.json();
+  return data.candidates[0].content.parts[0].text;
+}
+
+// Sample output will now be concise:
+/*
+Force is a push or pull that changes an object's motion.
+Effects:
+- Makes stationary objects move
+- Stops moving objects
+- Changes direction/speed
+- Can deform objects
+Key traits:
+- Vector quantity (magnitude+direction)
+- Measured in Newtons
+- Follows F=ma
+*/
 
         // DOM Elements
         const messagesContainer = document.getElementById('messages');
@@ -748,127 +791,105 @@ You specialize in Physics, Chemistry, Biology, Mathematics, and Computer Science
         
         // Handle Chat Submit
         async function handleChatSubmit(e) {
-            e.preventDefault();
-            const message = userInput.value.trim();
-            if (!message) return;
-            
-            // Add user message to UI
-            addMessage('user', message);
-            userInput.value = '';
-            
-            // Show typing indicator
-            const typingIndicator = document.createElement('div');
-            typingIndicator.classList.add('message', 'ai-message');
-            typingIndicator.id = 'typing-indicator';
-            typingIndicator.textContent = 'Thinking...';
-            messagesContainer.appendChild(typingIndicator);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            try {
-                // Prepare context from chat history (last 10 messages)
-                const recentMessages = chatHistory.slice(-10).map(msg => {
-                    return {
-                        role: msg.role === 'user' ? 'user' : 'model',
-                        parts: [{ text: msg.content }]
-                    };
-                });
-                
-                // Add system prompt
-                const conversation = [
-                    {
-                        role: 'model',
-                        parts: [{ text: SYSTEM_PROMPT }]
-                    },
-                    ...recentMessages,
-                    {
-                        role: 'user',
-                        parts: [{ text: message }]
-                    }
-                ];
-                
-                // Prepare request
-                const requestBody = {
-                    contents: conversation,
-                    generationConfig: {
-                        temperature: 0.4,
-                        maxOutputTokens: 2048
-                    }
-                };
-                
-                // Call API
-                // In a real implementation, you would make an actual API call
-                // Here we simulate a response for demo purposes
-                const response = await simulateAIResponse(message);
-                
-                // Remove typing indicator
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) {
-                    indicator.remove();
-                }
-                
-                // Add AI response to UI
-                addMessage('ai', response);
-                
-                // Save to chat history
-                saveMessage('user', message);
-                saveMessage('assistant', response);
-                
-                // Update history sidebar
-                renderChatHistory();
-                
-            } catch (error) {
-                console.error("Error:", error);
-                
-                // Remove typing indicator
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) {
-                    indicator.remove();
-                }
-                
-                // Show error message
-                addMessage('ai', "I'm sorry, I encountered an error while processing your request. Please try again.");
+    e.preventDefault();
+    const message = userInput.value.trim();
+    if (!message) return;
+    
+    // Add user message to UI
+    addMessage('user', message);
+    userInput.value = '';
+    
+    // Show typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.classList.add('message', 'ai-message');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.textContent = 'Thinking...';
+    messagesContainer.appendChild(typingIndicator);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    try {
+        // Prepare context from chat history (last 10 messages)
+        const recentMessages = chatHistory.slice(-10).map(msg => {
+            return {
+                role: msg.role === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.content }]
+            };
+        });
+        
+        // Add system prompt
+        const conversation = [
+            {
+                role: 'model',
+                parts: [{ text: SYSTEM_PROMPT }]
+            },
+            ...recentMessages,
+            {
+                role: 'user',
+                parts: [{ text: message }]
             }
+        ];
+        
+        // Prepare request
+        const requestBody = {
+            contents: conversation,
+            generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 2048
+            }
+        };
+        
+        // Make actual API call to Gemini
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
         }
         
-        // Simulate AI Response (for demo purposes)
-        function simulateAIResponse(message) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const lowerMsg = message.toLowerCase();
-                    
-                    // Simple pattern matching for demo
-                    if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
-                        resolve("Hello! I'm your Science and Math tutor. What would you like to learn about today?");
-                    } 
-
-                    else if (lowerMsg.includes('pythagoras') || lowerMsg.includes('pythagorean')) {
-                        resolve("The Pythagorean theorem states that in a right triangle, the square of the length of the hypotenuse equals the sum of the squares of the other two sides. It's written as a² + b² = c², where c is the hypotenuse. This fundamental principle is essential in geometry, trigonometry, and many real-world applications like navigation and construction.");
-                    }
-                    else if (lowerMsg.includes('newton') || lowerMsg.includes('gravity')) {
-                        resolve("Newton's Law of Universal Gravitation states that every particle attracts every other particle with a force directly proportional to the product of their masses and inversely proportional to the square of the distance between them. The formula is F = G(m₁m₂/r²), where G is the gravitational constant. This revolutionary idea explained planetary motion and why objects fall to Earth!");
-                    }
-                    else if (lowerMsg.includes('atom') || lowerMsg.includes('atomic')) {
-                        resolve("An atom is the basic unit of matter, consisting of a nucleus (containing protons and neutrons) surrounded by electrons. The number of protons determines which element it is. Modern atomic theory has evolved from Dalton's model to Thomson's 'plum pudding' model, then Rutherford's planetary model, and finally to the quantum mechanical model we use today, which describes electrons as existing in probability clouds rather than defined orbits.");
-                    }
-                    else if (lowerMsg.includes('derivative') || lowerMsg.includes('calculus')) {
-                        resolve("A derivative in calculus measures the rate at which a function changes at a particular point. It's represented as f'(x) or df/dx. For example, if f(x) = x², then f'(x) = 2x. This tells us that at any point x, the rate of change of the function is 2x. Derivatives are fundamental in physics for describing motion, in economics for analyzing marginal changes, and in optimization problems across many fields.");
-                    }
-                    else if (lowerMsg.includes('cell') || lowerMsg.includes('biology')) {
-                        resolve("Cells are the fundamental units of life. Eukaryotic cells (like those in plants and animals) have membrane-bound organelles including a nucleus that contains DNA, while prokaryotic cells (like bacteria) lack these features. Cell functions are controlled by various organelles: mitochondria generate energy, ribosomes synthesize proteins, the endoplasmic reticulum processes proteins, and the Golgi apparatus packages and distributes them. This complex cellular machinery works together to maintain life processes!");
-                    }
-                    else if (lowerMsg.includes('periodic table') || lowerMsg.includes('elements')) {
-                        resolve("The periodic table organizes chemical elements by increasing atomic number and recurring chemical properties. Elements in the same column (group) have similar properties because they have the same number of valence electrons. The table is divided into metals (left), nonmetals (right), and metalloids (between them). This organization helps scientists predict element properties and chemical reactions, making it one of chemistry's most powerful tools.");
-                    }
-                    else if (lowerMsg.includes('algorithm') || lowerMsg.includes('coding')) {
-                        resolve("An algorithm is a step-by-step procedure for solving a problem or accomplishing a task. In computer science, algorithms form the foundation of all computing systems. They can be expressed as pseudocode, flowcharts, or programming languages. Efficiency is measured in terms of time complexity (how execution time scales with input size) and space complexity (memory usage). Common algorithms include sorting (like quicksort or merge sort), searching (like binary search), and graph algorithms (like Dijkstra's shortest path).");
-                    }
-                    else {
-                        resolve("That's an interesting question about " + message.split(' ').slice(0, 3).join(' ') + "... Let me explain. To provide you with an accurate and comprehensive response, I'd need to connect to an AI model. In this demo, I'm providing simulated responses to certain keywords. Feel free to ask about topics like 'pythagorean theorem', 'newton's laws', 'atoms', 'derivatives', 'cells', 'periodic table', or 'algorithms' to see examples of how I would respond!");
-                    }
-                }, 1500);
-            });
+        const data = await response.json();
+        
+        // Extract the response text
+        let aiResponse = '';
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+            aiResponse = data.candidates[0].content.parts[0].text;
+        } else {
+            throw new Error('Unexpected API response format');
         }
         
+        // Remove typing indicator
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+        
+        // Add AI response to UI
+        addMessage('ai', aiResponse);
+        
+        // Save to chat history
+        saveMessage('user', message);
+        saveMessage('assistant', aiResponse);
+        
+        // Update history sidebar
+        renderChatHistory();
+        
+    } catch (error) {
+        console.error("Error:", error);
+        
+        // Remove typing indicator
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+        
+        // Show error message
+        addMessage('ai', "I'm sorry, I encountered an error while processing your request. Please try again.");
+    }
+}
         // Add Message to UI
         function addMessage(type, content) {
             const messageDiv = document.createElement('div');
@@ -1150,32 +1171,7 @@ You specialize in Physics, Chemistry, Biology, Mathematics, and Computer Science
             }
         }
         
-        // Handle Subject Quick Access
-        function handleSubjectClick(subject) {
-            let message = '';
-            
-            switch(subject) {
-                case 'physics':
-                    message = "Can you explain the fundamental forces of physics?";
-                    break;
-                case 'chemistry':
-                    message = "What are chemical bonds and how do they work?";
-                    break;
-                case 'biology':
-                    message = "Can you explain cell division and its importance?";
-                    break;
-                case 'mathematics':
-                    message = "What are the applications of calculus in real life?";
-                    break;
-                case 'computer-science':
-                    message = "Explain the concept of algorithms and their efficiency.";
-                    break;
-            }
-            
-            userInput.value = message;
-            userInput.focus();
-        }
-        
+
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', init);
         
@@ -1234,4 +1230,3 @@ You specialize in Physics, Chemistry, Biology, Mathematics, and Computer Science
 </body>
 </html>
 </antArtifact>
-
